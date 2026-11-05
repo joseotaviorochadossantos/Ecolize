@@ -1,11 +1,119 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#315c42" />
+  <title>Ecoalize | Disponibilidade</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="java.js" defer></script>
 </head>
 <body>
-    
+  <main class="app">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Ecoalize, início">
+        <img class="brand-logo" src="./img/1.jpg" alt="Logo da Ecoalize" />
+        <span>
+          <strong>Ecoalize</strong>
+          <small>Consultoria e Educação Ambiental</small>
+        </span>
+      </a>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">Encontro da equipe</p>
+      <h1>Reunião Geral</h1>
+      <p>Entre com seu nome e marque apenas os horários em que está disponível.</p>
+    </section>
+
+    <div class="content">
+      <aside class="card participant-card">
+        <div class="section-heading">
+          <span class="step-number">01</span>
+          <div>
+            <h2>Identifique-se</h2>
+            <p>Use sempre o mesmo nome para atualizar suas respostas.</p>
+          </div>
+        </div>
+
+        <form id="loginForm">
+          <label for="username">Seu nome</label>
+          <input id="username" name="username" type="text" autocomplete="name" placeholder="Ex.: Ana Silva" required />
+          <button class="button button-primary" type="submit">Entrar</button>
+        </form>
+
+        <p class="status" id="statusText" role="status" aria-live="polite"></p>
+
+        <p class="local-note">Esta versão de demonstração salva as respostas apenas neste navegador. Para a equipe ver os mesmos votos em aparelhos diferentes, será necessário conectar um banco de dados.</p>
+      </aside>
+
+      <section class="card schedule-card" aria-labelledby="scheduleTitle">
+        <div class="schedule-heading">
+          <div>
+            <p class="eyebrow">Disponibilidade do grupo</p>
+            <h2 id="scheduleTitle">Escolha seus horários</h2>
+          </div>
+          <p class="participant-summary" id="participantSummary">0 participantes neste navegador</p>
+        </div>
+
+        <div class="view-tabs" role="tablist" aria-label="Visualizações da reunião">
+          <button class="view-tab is-active" id="calendarTab" type="button" role="tab" aria-selected="true" aria-controls="calendarView">
+            Calendário
+          </button>
+          <button class="view-tab" id="participantsTab" type="button" role="tab" aria-selected="false" aria-controls="participantsView">
+            Quem respondeu
+          </button>
+        </div>
+
+        <section id="calendarView" role="tabpanel" aria-labelledby="calendarTab">
+          <p class="availability-hint">
+            <span class="availability-dot" aria-hidden="true"></span>
+            Marque apenas os horários em que está disponível. Os demais serão considerados indisponíveis.
+          </p>
+
+          <div class="legend" aria-label="Escala de pessoas disponíveis por horário">
+            <span>0 pessoas</span>
+            <span class="legend-scale" aria-hidden="true"><span></span></span>
+            <span id="legendMax">0 pessoas</span>
+          </div>
+
+          <div class="table-wrap">
+            <table aria-label="Calendário de disponibilidade">
+              <thead>
+                <tr>
+                  <th scope="col">Horário</th>
+                  <th scope="col">Seg</th>
+                  <th scope="col">Ter</th>
+                  <th scope="col">Qua</th>
+                  <th scope="col">Qui</th>
+                  <th scope="col">Sex</th>
+                </tr>
+              </thead>
+              <tbody id="calendarBody"></tbody>
+            </table>
+          </div>
+          <p class="calendar-note">Clique em um horário para marcar disponibilidade; clique novamente para desmarcar. O número mostra quantas pessoas podem participar.</p>
+        </section>
+
+        <section id="participantsView" class="participants-view" role="tabpanel" aria-labelledby="participantsTab" hidden>
+          <p class="participants-intro">Dias e horários disponíveis de cada pessoa. Os horários não listados são considerados indisponíveis.</p>
+          <ul id="participantsList" class="participant-list"></ul>
+          <p id="emptyParticipants" class="empty-participants">Ninguém entrou ainda. Entre com seu nome para aparecer aqui.</p>
+        </section>
+      </section>
+    </div>
+
+    <details class="admin-tools">
+      <summary>Área administrativa · iniciar uma nova rodada</summary>
+      <p>Apaga todas as respostas salvas neste navegador. Para limpar as respostas de toda a equipe, é necessário apagar no banco de dados compartilhado.</p>
+      <form id="resetForm" class="reset-form">
+        <label for="resetPassword">Senha de administração</label>
+        <div class="reset-controls">
+          <input id="resetPassword" type="password" autocomplete="current-password" placeholder="Digite a senha" required />
+          <button class="button button-danger" type="submit">Apagar respostas</button>
+        </div>
+      </form>
+    </details>
+  </main>
 </body>
 </html>

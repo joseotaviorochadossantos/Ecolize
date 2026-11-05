@@ -38,13 +38,13 @@
 
         <form id="loginForm">
           <label for="username">Seu nome</label>
-          <input id="username" name="username" type="text" autocomplete="name" placeholder="Ex.: Ana Silva" required />
+          <input id="username" name="username" type="text" maxlength="100" autocomplete="name" placeholder="Ex.: Ana Silva" required />
           <button class="button button-primary" type="submit">Entrar</button>
         </form>
 
         <p class="status" id="statusText" role="status" aria-live="polite"></p>
 
-        <p class="local-note">Esta versão de demonstração salva as respostas apenas neste navegador. Para a equipe ver os mesmos votos em aparelhos diferentes, será necessário conectar um banco de dados.</p>
+        <p class="local-note">As respostas são compartilhadas com a equipe pelo Supabase. Use sempre o mesmo nome para atualizar seus horários.</p>
       </aside>
 
       <section class="card schedule-card" aria-labelledby="scheduleTitle">
@@ -53,7 +53,7 @@
             <p class="eyebrow">Disponibilidade do grupo</p>
             <h2 id="scheduleTitle">Escolha seus horários</h2>
           </div>
-          <p class="participant-summary" id="participantSummary">0 participantes neste navegador</p>
+          <p class="participant-summary" id="participantSummary">0 participantes no grupo</p>
         </div>
 
         <div class="view-tabs" role="tablist" aria-label="Visualizações da reunião">
@@ -92,7 +92,7 @@
               <tbody id="calendarBody"></tbody>
             </table>
           </div>
-          <p class="calendar-note">Clique em um horário para marcar disponibilidade; clique novamente para desmarcar. O número mostra quantas pessoas podem participar.</p>
+          <p class="calendar-note">Clique em um horário para marcar disponibilidade; clique novamente para desmarcar. O número mostra quantas pessoas podem participar. As respostas de outros aparelhos atualizam automaticamente.</p>
         </section>
 
         <section id="participantsView" class="participants-view" role="tabpanel" aria-labelledby="participantsTab" hidden>
@@ -105,14 +105,7 @@
 
     <details class="admin-tools">
       <summary>Área administrativa · iniciar uma nova rodada</summary>
-      <p>Apaga todas as respostas salvas neste navegador. Para limpar as respostas de toda a equipe, é necessário apagar no banco de dados compartilhado.</p>
-      <form id="resetForm" class="reset-form">
-        <label for="resetPassword">Senha de administração</label>
-        <div class="reset-controls">
-          <input id="resetPassword" type="password" autocomplete="current-password" placeholder="Digite a senha" required />
-          <button class="button button-danger" type="submit">Apagar respostas</button>
-        </div>
-      </form>
+      <p>Para apagar as respostas de todos, use o Table Editor do Supabase e limpe a tabela <code>availability_responses</code>. A página não oferece essa ação porque uma senha no JavaScript ficaria visível para qualquer visitante.</p>
     </details>
   </main>
 </body>

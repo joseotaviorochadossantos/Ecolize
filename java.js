@@ -1,11 +1,14 @@
 const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
 const HOURS = Array.from({ length: 13 }, (_, index) => `${String(index + 8).padStart(2, '0')}:00`);
-const RESPONSES_KEY = 'ecolize-disponibilidade-v2';
-const RESET_PASSWORD = 'ZE';
+const SUPABASE_URL = 'https://ynbbxbphxuxtfdgydqbd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_fYma_eFlTBJqcZ5RrPyW4A_BPVL69G_';
+const RESPONSES_ENDPOINT = `${SUPABASE_URL}/rest/v1/availability_responses`;
+const REFRESH_INTERVAL_MS = 15000;
 
 const calendarBody = document.getElementById('calendarBody');
 const statusText = document.getElementById('statusText');
 const usernameInput = document.getElementById('username');
+const loginButton = document.querySelector('#loginForm button[type="submit"]');
 const participantSummary = document.getElementById('participantSummary');
 const participantsList = document.getElementById('participantsList');
 const emptyParticipants = document.getElementById('emptyParticipants');
@@ -13,31 +16,100 @@ const legendMax = document.getElementById('legendMax');
 
 let participants = {};
 let currentUserId = '';
+let hasLoadedOnce = false;
+let isSaving = false;
 
 function showStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.classList.toggle('is-error', isError);
 }
 
-function readParticipants() {
-  const saved = localStorage.getItem(RESPONSES_KEY);
-  if (!saved) return {};
-
-  const parsed = JSON.parse(saved);
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('As respostas salvas estão em um formato inválido.');
-  }
-
-  return parsed;
+function getRequestHeaders(extraHeaders = {}) {
+  return {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    'Content-Type': 'application/json',
+    ...extraHeaders
+  };
 }
 
-function saveParticipants() {
+async function getErrorMessage(response) {
+  const responseText = await response.text();
+  if (!responseText) return `${response.status} ${response.statusText}`;
+
   try {
-    localStorage.setItem(RESPONSES_KEY, JSON.stringify(participants));
-    return true;
+    const body = JSON.parse(responseText);
+    return body.message || body.error_description || body.error || responseText;
   } catch {
-    showStatus('Não foi possível salvar. O armazenamento do navegador pode estar cheio ou bloqueado.', true);
+    return responseText;
+  }
+}
+
+async function loadParticipants({ quiet = false } = {}) {
+  try {
+    const response = await fetch(`${RESPONSES_ENDPOINT}?select=id,display_name,votes`, {
+      headers: getRequestHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response));
+    }
+
+    const rows = await response.json();
+    if (!Array.isArray(rows)) {
+      throw new Error('O Supabase retornou uma resposta em formato inválido.');
+    }
+
+    participants = Object.fromEntries(
+      rows.map((row) => [
+        row.id,
+        { displayName: row.display_name, votes: row.votes || {} }
+      ])
+    );
+    hasLoadedOnce = true;
+    loginButton.disabled = false;
+    renderCalendar();
+
+    if (!quiet) showStatus('Conectado ao Supabase. As respostas estão atualizadas.');
+    return true;
+  } catch (error) {
+    showStatus(
+      `Não foi possível conectar ao Supabase: ${error.message}. Confira a tabela, as políticas do SQL e abra o site pelo Live Server.`,
+      true
+    );
     return false;
+  }
+}
+
+async function saveParticipant(participant) {
+  isSaving = true;
+  loginButton.disabled = true;
+  renderCalendar();
+
+  try {
+    const response = await fetch(`${RESPONSES_ENDPOINT}?on_conflict=id`, {
+      method: 'POST',
+      headers: getRequestHeaders({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({
+        id: currentUserId,
+        display_name: participant.displayName,
+        votes: participant.votes,
+        updated_at: new Date().toISOString()
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response));
+    }
+
+    return true;
+  } catch (error) {
+    showStatus(`Não foi possível salvar no Supabase: ${error.message}.`, true);
+    return false;
+  } finally {
+    isSaving = false;
+    loginButton.disabled = !hasLoadedOnce;
+    renderCalendar();
   }
 }
 
@@ -101,7 +173,7 @@ function renderCalendar() {
   const highestCount = Math.max(0, ...countsByKey.map(([, counts]) => counts.available));
 
   legendMax.textContent = `${highestCount} ${highestCount === 1 ? 'pessoa' : 'pessoas'}`;
-  participantSummary.textContent = `${Object.keys(participants).length} ${Object.keys(participants).length === 1 ? 'participante' : 'participantes'} neste navegador`;
+  participantSummary.textContent = `${Object.keys(participants).length} ${Object.keys(participants).length === 1 ? 'participante' : 'participantes'} no grupo`;
 
   countsByKey.forEach(([key, counts], index) => {
     const button = buttons[index];
@@ -116,7 +188,7 @@ function renderCalendar() {
     availableCount.textContent = String(counts.available);
     button.dataset.level = String(level);
     button.classList.toggle('is-mine', vote === 'available');
-    button.disabled = !currentUserId;
+    button.disabled = !currentUserId || !hasLoadedOnce || isSaving;
     button.title = `${slotLabel}: ${counts.available} ${counts.available === 1 ? 'pessoa disponível' : 'pessoas disponíveis'}. ${counts.availableNames.length ? `Disponíveis: ${counts.availableNames.join(', ')}.` : 'Nenhuma pessoa marcou disponibilidade.'}`;
     button.setAttribute(
       'aria-label',
@@ -183,7 +255,7 @@ function renderParticipants() {
   participantsList.hidden = peopleWhoEntered.length === 0;
 }
 
-function markSlot(key) {
+async function markSlot(key) {
   if (!currentUserId) {
     showStatus('Entre com seu nome antes de marcar os horários.', true);
     return;
@@ -198,19 +270,20 @@ function markSlot(key) {
     participant.votes[key] = 'available';
   }
 
-  if (!saveParticipants()) {
+  if (!await saveParticipant(participant)) {
     if (previousVote) participant.votes[key] = previousVote;
     else delete participant.votes[key];
     renderCalendar();
     return;
   }
 
-  renderCalendar();
   showStatus(`Resposta atualizada para ${participant.displayName}.`);
 }
 
-function enterAsParticipant(event) {
+async function enterAsParticipant(event) {
   event.preventDefault();
+  if (!hasLoadedOnce || isSaving) return;
+
   const displayName = usernameInput.value.trim();
 
   if (!displayName) {
@@ -230,7 +303,7 @@ function enterAsParticipant(event) {
     existingParticipant.displayName = displayName;
   }
 
-  if (!saveParticipants()) {
+  if (!await saveParticipant(participants[participantId])) {
     if (existingParticipant) existingParticipant.displayName = previousDisplayName;
     else delete participants[participantId];
     currentUserId = previousUserId;
@@ -241,32 +314,6 @@ function enterAsParticipant(event) {
   usernameInput.value = displayName;
   renderCalendar();
   showStatus(`Você entrou como ${displayName}.`);
-}
-
-function resetResponses(event) {
-  event.preventDefault();
-
-  const passwordInput = document.getElementById('resetPassword');
-  if (passwordInput.value !== RESET_PASSWORD) {
-    passwordInput.value = '';
-    showStatus('Senha incorreta. As respostas não foram apagadas.', true);
-    return;
-  }
-
-  passwordInput.value = '';
-  if (!window.confirm('Apagar todas as respostas salvas neste navegador? Esta ação não pode ser desfeita.')) return;
-
-  const previousParticipants = participants;
-  participants = {};
-  if (!saveParticipants()) {
-    participants = previousParticipants;
-    renderCalendar();
-    return;
-  }
-
-  currentUserId = '';
-  renderCalendar();
-  showStatus('Respostas deste navegador apagadas. Você já pode começar uma nova rodada.');
 }
 
 function setActiveView(view) {
@@ -280,7 +327,6 @@ function setActiveView(view) {
 }
 
 document.getElementById('loginForm').addEventListener('submit', enterAsParticipant);
-document.getElementById('resetForm').addEventListener('submit', resetResponses);
 document.getElementById('calendarTab').addEventListener('click', () => setActiveView('calendar'));
 document.getElementById('participantsTab').addEventListener('click', () => setActiveView('participants'));
 document.querySelector('.view-tabs').addEventListener('keydown', (event) => {
@@ -299,12 +345,10 @@ document.querySelector('.view-tabs').addEventListener('keydown', (event) => {
 });
 
 buildCalendar();
-
-try {
-  participants = readParticipants();
-} catch {
-  participants = {};
-  showStatus('Não foi possível carregar as respostas salvas. Os dados armazenados podem estar inválidos.', true);
-}
-
-renderCalendar();
+loginButton.disabled = true;
+showStatus('Conectando ao Supabase…');
+loadParticipants().then(() => {
+  window.setInterval(() => {
+    if (!isSaving) loadParticipants({ quiet: true });
+  }, REFRESH_INTERVAL_MS);
+});

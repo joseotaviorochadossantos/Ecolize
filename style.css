@@ -142,19 +142,6 @@ body::before {
   margin-bottom: 24px;
 }
 
-.step-number {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--soft-blue);
-  color: var(--forest);
-  font-size: 11px;
-  font-weight: 800;
-}
-
 .section-heading h2,
 .schedule-heading h2 {
   margin: 0;
@@ -425,7 +412,8 @@ table {
   position: relative;
   z-index: 1;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
   background: transparent;
 }
@@ -440,6 +428,9 @@ td {
 }
 
 thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   height: 38px;
   background: rgba(230, 245, 250, 0.62);
   color: var(--ink);
@@ -449,7 +440,14 @@ thead th {
 
 thead th:first-child,
 .time-label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
   width: 68px;
+}
+
+thead th:first-child {
+  z-index: 3;
 }
 
 thead th:last-child,
@@ -466,6 +464,7 @@ tbody tr:last-child td {
   color: var(--muted);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
+  box-shadow: 2px 0 5px rgba(23, 59, 94, 0.12);
 }
 
 .slot-button {

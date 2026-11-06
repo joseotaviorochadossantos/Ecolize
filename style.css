@@ -562,6 +562,24 @@ tbody tr:last-child td {
   cursor: not-allowed;
 }
 
+.slot-tooltip {
+  position: fixed;
+  z-index: 20;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px var(--shadow-color);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
 .slot-button[data-level="1"] {
   background: var(--slot-level-1);
 }
@@ -731,7 +749,7 @@ tbody tr:last-child td {
 .site-footer {
   margin-top: 22px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 16px;
   text-align: center;
 }
 

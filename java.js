@@ -19,10 +19,17 @@ const themeToggle = document.getElementById('themeToggle');
 const adminPasswordInput = document.getElementById('adminPassword');
 const resetButton = document.getElementById('resetButton');
 const adminStatus = document.getElementById('adminStatus');
+const slotTooltip = document.createElement('div');
 const tableBackgroundLayers = [
   document.getElementById('tableBackgroundA'),
   document.getElementById('tableBackgroundB')
 ];
+
+slotTooltip.id = 'slotTooltip';
+slotTooltip.className = 'slot-tooltip';
+slotTooltip.setAttribute('role', 'tooltip');
+slotTooltip.hidden = true;
+document.body.appendChild(slotTooltip);
 
 let participants = {};
 let currentUserId = '';
@@ -30,6 +37,7 @@ let hasLoadedOnce = false;
 let isSaving = false;
 let activeBackgroundLayer = 0;
 let currentBackgroundIndex = 0;
+let tooltipButton = null;
 
 const tableBackgroundImages = Array.from(
   { length: 20 },
@@ -67,6 +75,33 @@ function getRequestHeaders(extraHeaders = {}) {
     'Content-Type': 'application/json',
     ...extraHeaders
   };
+}
+
+function showSlotTooltip(button) {
+  tooltipButton = button;
+  slotTooltip.textContent = button.dataset.tooltip;
+  slotTooltip.hidden = false;
+
+  const buttonRect = button.getBoundingClientRect();
+  const tooltipRect = slotTooltip.getBoundingClientRect();
+  const margin = 8;
+  const left = Math.min(
+    Math.max(margin, buttonRect.left + (buttonRect.width - tooltipRect.width) / 2),
+    window.innerWidth - tooltipRect.width - margin
+  );
+  let top = buttonRect.top - tooltipRect.height - margin;
+
+  if (top < margin) {
+    top = Math.min(window.innerHeight - tooltipRect.height - margin, buttonRect.bottom + margin);
+  }
+
+  slotTooltip.style.left = `${left}px`;
+  slotTooltip.style.top = `${Math.max(margin, top)}px`;
+}
+
+function hideSlotTooltip() {
+  tooltipButton = null;
+  slotTooltip.hidden = true;
 }
 
 async function getErrorMessage(response) {
@@ -172,8 +207,44 @@ function buildCalendar() {
       button.dataset.key = key;
       button.dataset.level = '0';
       button.disabled = true;
+      button.setAttribute('aria-describedby', slotTooltip.id);
       button.setAttribute('aria-label', `${day}, ${hour}. Entre com seu nome para marcar.`);
-      button.addEventListener('click', () => markSlot(key));
+      let longPressTimer;
+      let longPressTriggered = false;
+
+      button.addEventListener('pointerdown', (event) => {
+        if (event.pointerType !== 'touch') return;
+        longPressTriggered = false;
+        longPressTimer = window.setTimeout(() => {
+          longPressTriggered = true;
+          showSlotTooltip(button);
+        }, 500);
+      });
+      button.addEventListener('pointerup', () => window.clearTimeout(longPressTimer));
+      button.addEventListener('pointercancel', () => {
+        window.clearTimeout(longPressTimer);
+        longPressTriggered = false;
+      });
+      button.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse') showSlotTooltip(button);
+      });
+      button.addEventListener('pointerleave', () => {
+        window.clearTimeout(longPressTimer);
+        if (!longPressTriggered && tooltipButton === button) hideSlotTooltip();
+      });
+      button.addEventListener('focus', () => showSlotTooltip(button));
+      button.addEventListener('blur', hideSlotTooltip);
+      button.addEventListener('contextmenu', (event) => {
+        if (longPressTriggered) event.preventDefault();
+      });
+      button.addEventListener('click', (event) => {
+        if (longPressTriggered) {
+          event.preventDefault();
+          longPressTriggered = false;
+          return;
+        }
+        markSlot(key);
+      });
 
       availableCount.className = 'available-count';
       availableCount.textContent = '0';
@@ -226,7 +297,7 @@ function renderCalendar() {
     button.dataset.level = String(level);
     button.classList.toggle('is-mine', vote === 'available');
     button.disabled = !currentUserId || !hasLoadedOnce || isSaving;
-    button.title = `${slotLabel}: ${counts.available} ${counts.available === 1 ? 'pessoa disponível' : 'pessoas disponíveis'}. ${counts.availableNames.length ? `Disponíveis: ${counts.availableNames.join(', ')}.` : 'Nenhuma pessoa marcou disponibilidade.'}`;
+    button.dataset.tooltip = `${slotLabel}: ${counts.available} ${counts.available === 1 ? 'pessoa disponível' : 'pessoas disponíveis'}. ${counts.availableNames.length ? `Disponíveis: ${counts.availableNames.join(', ')}.` : 'Nenhuma pessoa marcou disponibilidade.'}`;
     button.setAttribute(
       'aria-label',
       `${slotLabel}: ${counts.available} ${counts.available === 1 ? 'pessoa disponível' : 'pessoas disponíveis'}; quem não marcou está indisponível${vote === 'available' ? '. Você marcou disponível.' : currentUserId ? '. Você não marcou e está indisponível.' : '.'}`
@@ -429,6 +500,14 @@ function startTableBackgroundSlideshow() {
 
 document.getElementById('loginForm').addEventListener('submit', enterAsParticipant);
 document.getElementById('resetForm').addEventListener('submit', resetResponses);
+document.addEventListener('pointerdown', (event) => {
+  if (tooltipButton && !tooltipButton.contains(event.target)) hideSlotTooltip();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') hideSlotTooltip();
+});
+window.addEventListener('scroll', hideSlotTooltip, true);
+window.addEventListener('resize', hideSlotTooltip);
 themeToggle.addEventListener('click', toggleTheme);
 document.getElementById('calendarTab').addEventListener('click', () => setActiveView('calendar'));
 document.getElementById('participantsTab').addEventListener('click', () => setActiveView('participants'));

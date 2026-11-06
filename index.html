@@ -18,6 +18,9 @@
           <small>Consultoria e Educação Ambiental</small>
         </span>
       </a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+        ☾ Tema escuro
+      </button>
     </header>
 
     <section class="intro">
@@ -110,8 +113,17 @@
 
     <details class="admin-tools">
       <summary>Área administrativa · iniciar uma nova rodada</summary>
-      <p>Para apagar as respostas de todos, use o Table Editor do Supabase e limpe a tabela <code>availability_responses</code>. A página não oferece essa ação porque uma senha no JavaScript ficaria visível para qualquer visitante.</p>
+      <p>Você pode apagar as respostas por aqui com a senha administrativa ou diretamente no Table Editor do Supabase, limpando a tabela <code>availability_responses</code>.</p>
+      <form id="resetForm" class="reset-form">
+        <label for="adminPassword">Senha administrativa</label>
+        <input id="adminPassword" name="adminPassword" type="password" autocomplete="current-password" required />
+        <button class="button button-outline" id="resetButton" type="submit">Apagar respostas e iniciar nova rodada</button>
+      </form>
+      <p class="admin-status" id="adminStatus" role="status" aria-live="polite"></p>
+      <p class="admin-setup-note">O reset pelo site precisa da Edge Function <code>reset-responses</code> publicada no Supabase e do segredo <code>ADMIN_RESET_PASSWORD</code> configurado nela, com pelo menos 16 caracteres. A senha não fica salva no código do site.</p>
     </details>
+
+    <footer class="site-footer">Feito por um querido do JF</footer>
   </main>
 </body>
 </html>

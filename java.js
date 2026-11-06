@@ -3,6 +3,7 @@ const HOURS = Array.from({ length: 13 }, (_, index) => `${String(index + 8).padS
 const SUPABASE_URL = 'https://ynbbxbphxuxtfdgydqbd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_fYma_eFlTBJqcZ5RrPyW4A_BPVL69G_';
 const RESPONSES_ENDPOINT = `${SUPABASE_URL}/rest/v1/availability_responses`;
+const RESET_ENDPOINT = `${SUPABASE_URL}/functions/v1/reset-responses`;
 const REFRESH_INTERVAL_MS = 15000;
 const TABLE_BACKGROUND_INTERVAL_MS = 7000;
 
@@ -14,6 +15,10 @@ const participantSummary = document.getElementById('participantSummary');
 const participantsList = document.getElementById('participantsList');
 const emptyParticipants = document.getElementById('emptyParticipants');
 const legendMax = document.getElementById('legendMax');
+const themeToggle = document.getElementById('themeToggle');
+const adminPasswordInput = document.getElementById('adminPassword');
+const resetButton = document.getElementById('resetButton');
+const adminStatus = document.getElementById('adminStatus');
 const tableBackgroundLayers = [
   document.getElementById('tableBackgroundA'),
   document.getElementById('tableBackgroundB')
@@ -34,6 +39,26 @@ const tableBackgroundImages = Array.from(
 function showStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.classList.toggle('is-error', isError);
+}
+
+function setTheme(theme) {
+  const isDark = theme === 'dark';
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+  themeToggle.setAttribute('aria-pressed', String(isDark));
+  themeToggle.setAttribute('aria-label', isDark ? 'Ativar tema claro' : 'Ativar tema escuro');
+  themeToggle.textContent = isDark ? '☀ Claro' : '☾ Escuro';
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  setTheme(nextTheme);
+
+  try {
+    localStorage.setItem('ecolize-theme', nextTheme);
+  } catch (error) {
+    console.error('Não foi possível salvar a preferência de tema neste navegador.', error);
+    showStatus('Tema alterado, mas a preferência não pôde ser salva neste navegador.', true);
+  }
 }
 
 function getRequestHeaders(extraHeaders = {}) {
@@ -328,6 +353,39 @@ async function enterAsParticipant(event) {
   showStatus(`Você entrou como ${displayName}.`);
 }
 
+async function resetResponses(event) {
+  event.preventDefault();
+  adminStatus.textContent = '';
+  adminStatus.classList.remove('is-error');
+  resetButton.disabled = true;
+
+  try {
+    const response = await fetch(RESET_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: adminPasswordInput.value })
+    });
+
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response));
+    }
+
+    adminPasswordInput.value = '';
+    currentUserId = '';
+    usernameInput.value = '';
+    await loadParticipants({ quiet: true });
+    adminStatus.textContent = 'Respostas apagadas. Uma nova rodada pode começar.';
+  } catch (error) {
+    adminStatus.textContent = `Não foi possível iniciar uma nova rodada: ${error.message}`;
+    adminStatus.classList.add('is-error');
+  } finally {
+    resetButton.disabled = false;
+  }
+}
+
 function setActiveView(view) {
   const isCalendar = view === 'calendar';
   document.getElementById('calendarTab').classList.toggle('is-active', isCalendar);
@@ -370,6 +428,8 @@ function startTableBackgroundSlideshow() {
 }
 
 document.getElementById('loginForm').addEventListener('submit', enterAsParticipant);
+document.getElementById('resetForm').addEventListener('submit', resetResponses);
+themeToggle.addEventListener('click', toggleTheme);
 document.getElementById('calendarTab').addEventListener('click', () => setActiveView('calendar'));
 document.getElementById('participantsTab').addEventListener('click', () => setActiveView('participants'));
 document.querySelector('.view-tabs').addEventListener('keydown', (event) => {
@@ -388,6 +448,12 @@ document.querySelector('.view-tabs').addEventListener('keydown', (event) => {
 });
 
 buildCalendar();
+try {
+  setTheme(localStorage.getItem('ecolize-theme') || 'light');
+} catch (error) {
+  console.error('Não foi possível carregar a preferência de tema deste navegador.', error);
+  setTheme('light');
+}
 startTableBackgroundSlideshow();
 loginButton.disabled = true;
 showStatus('Conectando ao Supabase…');

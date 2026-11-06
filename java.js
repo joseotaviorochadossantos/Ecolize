@@ -4,6 +4,7 @@ const SUPABASE_URL = 'https://ynbbxbphxuxtfdgydqbd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_fYma_eFlTBJqcZ5RrPyW4A_BPVL69G_';
 const RESPONSES_ENDPOINT = `${SUPABASE_URL}/rest/v1/availability_responses`;
 const REFRESH_INTERVAL_MS = 15000;
+const TABLE_BACKGROUND_INTERVAL_MS = 7000;
 
 const calendarBody = document.getElementById('calendarBody');
 const statusText = document.getElementById('statusText');
@@ -13,11 +14,22 @@ const participantSummary = document.getElementById('participantSummary');
 const participantsList = document.getElementById('participantsList');
 const emptyParticipants = document.getElementById('emptyParticipants');
 const legendMax = document.getElementById('legendMax');
+const tableBackgroundLayers = [
+  document.getElementById('tableBackgroundA'),
+  document.getElementById('tableBackgroundB')
+];
 
 let participants = {};
 let currentUserId = '';
 let hasLoadedOnce = false;
 let isSaving = false;
+let activeBackgroundLayer = 0;
+let currentBackgroundIndex = 0;
+
+const tableBackgroundImages = Array.from(
+  { length: 20 },
+  (_, index) => `./img/${index + 2}.jpeg`
+);
 
 function showStatus(message, isError = false) {
   statusText.textContent = message;
@@ -326,6 +338,37 @@ function setActiveView(view) {
   document.getElementById('participantsView').hidden = isCalendar;
 }
 
+function startTableBackgroundSlideshow() {
+  const firstLayer = tableBackgroundLayers[activeBackgroundLayer];
+  firstLayer.addEventListener('load', () => firstLayer.classList.add('is-active'), { once: true });
+  firstLayer.addEventListener('error', () => {
+    console.error(`Não foi possível carregar a imagem de fundo: ${tableBackgroundImages[currentBackgroundIndex]}`);
+  }, { once: true });
+  firstLayer.src = tableBackgroundImages[currentBackgroundIndex];
+
+  window.setInterval(() => {
+    const nextIndex = (currentBackgroundIndex + 1) % tableBackgroundImages.length;
+    const nextLayerIndex = 1 - activeBackgroundLayer;
+    const nextLayer = tableBackgroundLayers[nextLayerIndex];
+
+    nextLayer.onload = () => {
+      nextLayer.onload = null;
+      nextLayer.onerror = null;
+      nextLayer.classList.add('is-active');
+      tableBackgroundLayers[activeBackgroundLayer].classList.remove('is-active');
+      activeBackgroundLayer = nextLayerIndex;
+      currentBackgroundIndex = nextIndex;
+    };
+    nextLayer.onerror = () => {
+      nextLayer.onload = null;
+      nextLayer.onerror = null;
+      console.error(`Não foi possível carregar a imagem de fundo: ${tableBackgroundImages[nextIndex]}`);
+      currentBackgroundIndex = nextIndex;
+    };
+    nextLayer.src = tableBackgroundImages[nextIndex];
+  }, TABLE_BACKGROUND_INTERVAL_MS);
+}
+
 document.getElementById('loginForm').addEventListener('submit', enterAsParticipant);
 document.getElementById('calendarTab').addEventListener('click', () => setActiveView('calendar'));
 document.getElementById('participantsTab').addEventListener('click', () => setActiveView('participants'));
@@ -345,6 +388,7 @@ document.querySelector('.view-tabs').addEventListener('keydown', (event) => {
 });
 
 buildCalendar();
+startTableBackgroundSlideshow();
 loginButton.disabled = true;
 showStatus('Conectando ao Supabase…');
 loadParticipants().then(() => {

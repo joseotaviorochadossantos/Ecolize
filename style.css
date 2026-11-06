@@ -381,14 +381,44 @@ body::before {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: white;
+  background: transparent;
+}
+
+.table-canvas {
+  position: relative;
+  width: 100%;
+  min-width: 480px;
+}
+
+.table-background {
+  position: absolute;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  inset: 0;
+}
+
+.table-background-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  inset: 0;
+}
+
+.table-background-image.is-active {
+  opacity: 0.42;
 }
 
 table {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  min-width: 480px;
   border-collapse: collapse;
   table-layout: fixed;
+  background: transparent;
 }
 
 th,
@@ -402,7 +432,7 @@ td {
 
 thead th {
   height: 38px;
-  background: rgba(248, 250, 247, 0.88);
+  background: rgba(248, 250, 247, 0.46);
   color: #536057;
   font-size: 11px;
   font-weight: 700;
@@ -423,7 +453,7 @@ tbody tr:last-child td {
 }
 
 .time-label {
-  background: rgba(251, 252, 250, 0.88);
+  background: rgba(251, 252, 250, 0.46);
   color: #69756c;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
@@ -438,7 +468,7 @@ tbody tr:last-child td {
   justify-content: center;
   gap: 3px;
   border: 0;
-  background: rgba(245, 248, 243, 0.82);
+  background: rgba(245, 248, 243, 0.3);
   color: #315d39;
   cursor: pointer;
   font: inherit;
@@ -456,19 +486,19 @@ tbody tr:last-child td {
 }
 
 .slot-button[data-level="1"] {
-  background: rgba(225, 240, 223, 0.87);
+  background: rgba(225, 240, 223, 0.42);
 }
 
 .slot-button[data-level="2"] {
-  background: rgba(196, 227, 194, 0.9);
+  background: rgba(196, 227, 194, 0.52);
 }
 
 .slot-button[data-level="3"] {
-  background: rgba(145, 202, 145, 0.93);
+  background: rgba(145, 202, 145, 0.62);
 }
 
 .slot-button[data-level="4"] {
-  background: rgba(76, 153, 88, 0.96);
+  background: rgba(76, 153, 88, 0.78);
   color: white;
 }
 

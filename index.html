@@ -78,19 +78,25 @@
           </div>
 
           <div class="table-wrap">
-            <table aria-label="Calendário de disponibilidade">
-              <thead>
-                <tr>
-                  <th scope="col">Horário</th>
-                  <th scope="col">Seg</th>
-                  <th scope="col">Ter</th>
-                  <th scope="col">Qua</th>
-                  <th scope="col">Qui</th>
-                  <th scope="col">Sex</th>
-                </tr>
-              </thead>
-              <tbody id="calendarBody"></tbody>
-            </table>
+            <div class="table-canvas">
+              <div class="table-background" aria-hidden="true">
+                <img class="table-background-image" id="tableBackgroundA" alt="" />
+                <img class="table-background-image" id="tableBackgroundB" alt="" />
+              </div>
+              <table aria-label="Calendário de disponibilidade">
+                <thead>
+                  <tr>
+                    <th scope="col">Horário</th>
+                    <th scope="col">Seg</th>
+                    <th scope="col">Ter</th>
+                    <th scope="col">Qua</th>
+                    <th scope="col">Qui</th>
+                    <th scope="col">Sex</th>
+                  </tr>
+                </thead>
+                <tbody id="calendarBody"></tbody>
+              </table>
+            </div>
           </div>
           <p class="calendar-note">Clique em um horário para marcar disponibilidade; clique novamente para desmarcar. O número mostra quantas pessoas podem participar. As respostas de outros aparelhos atualizam automaticamente.</p>
         </section>

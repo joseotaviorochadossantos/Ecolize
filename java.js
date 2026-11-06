@@ -29,7 +29,7 @@ let currentBackgroundIndex = 0;
 const tableBackgroundImages = Array.from(
   { length: 20 },
   (_, index) => `./img/${index + 2}.jpeg`
-);
+).concat('./img/22%20(1).jpeg', './img/23.jpeg', './img/24.jpeg');
 
 function showStatus(message, isError = false) {
   statusText.textContent = message;

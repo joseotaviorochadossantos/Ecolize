@@ -1,13 +1,13 @@
  :root {
   color-scheme: light;
-  --forest: #315c42;
-  --forest-dark: #234732;
-  --leaf: #5da36b;
-  --ink: #26342b;
-  --muted: #718076;
-  --line: #e2e8e2;
+  --forest: #173b5e;
+  --forest-dark: #102b46;
+  --leaf: #f2c94c;
+  --ink: #19344f;
+  --muted: #687e91;
+  --line: #d6e7ee;
   --surface: rgba(255, 255, 255, 0.94);
-  --soft-green: #f0f7ef;
+  --soft-blue: #e6f5fa;
   --red: #b64e4e;
 }
 
@@ -19,7 +19,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background-color: #edf2eb;
+  background-color: #eaf7fb;
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -30,7 +30,7 @@ body {
 body::before {
   position: fixed;
   z-index: -1;
-  background: rgba(243, 247, 241, 0.82);
+  background: rgba(234, 247, 251, 0.82);
   content: "";
   inset: 0;
 }
@@ -57,19 +57,19 @@ body::before {
 }
 
 .brand {
-  gap: 12px;
+  gap: 18px;
   color: inherit;
   text-decoration: none;
 }
 
 .brand-logo {
   display: block;
-  width: 44px;
-  height: 44px;
+  width: 88px;
+  height: 88px;
   flex: 0 0 auto;
   border-radius: 50%;
   background: white;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .brand strong,
@@ -78,14 +78,14 @@ body::before {
 }
 
 .brand strong {
-  font-size: 18px;
+  font-size: 34px;
   letter-spacing: 0.01em;
 }
 
 .brand small {
-  margin-top: 3px;
+  margin-top: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 15px;
 }
 
 .intro {
@@ -127,7 +127,7 @@ body::before {
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 14px 40px rgba(39, 67, 45, 0.09);
+  box-shadow: 0 14px 40px rgba(23, 59, 94, 0.1);
   backdrop-filter: blur(12px);
 }
 
@@ -149,7 +149,7 @@ body::before {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: var(--soft-green);
+  background: var(--soft-blue);
   color: var(--forest);
   font-size: 11px;
   font-weight: 800;
@@ -190,7 +190,7 @@ body::before {
 
 #username:focus {
   border-color: var(--leaf);
-  outline: 3px solid rgba(93, 163, 107, 0.18);
+  outline: 3px solid rgba(242, 201, 76, 0.3);
 }
 
 .button {
@@ -211,22 +211,22 @@ body::before {
 
 .button:focus-visible,
 .slot-button:focus-visible {
-  outline: 3px solid rgba(49, 92, 66, 0.35);
+  outline: 3px solid rgba(23, 59, 94, 0.35);
   outline-offset: 2px;
 }
 
 .button-primary {
   width: 100%;
-  background: var(--forest);
-  color: white;
+  background: var(--leaf);
+  color: var(--ink);
 }
 
 .button-primary:hover {
-  background: var(--forest-dark);
+  background: #e8bb35;
 }
 
 .button-outline {
-  border-color: #d7e0d7;
+  border-color: var(--line);
   background: rgba(255, 255, 255, 0.8);
   color: var(--forest);
 }
@@ -274,13 +274,30 @@ body::before {
   margin-top: 16px;
   padding: 11px;
   border-radius: 9px;
-  background: #f4f6f2;
+  background: #edf8fb;
 }
 
 .schedule-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-width: 0;
   flex: 1;
   padding: 24px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.schedule-card > :not(.schedule-background) {
+  position: relative;
+  z-index: 1;
+}
+
+.schedule-background {
+  position: absolute;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  inset: 0;
 }
 
 .schedule-heading {
@@ -350,7 +367,7 @@ body::before {
 }
 
 .view-tab:focus-visible {
-  outline: 3px solid rgba(49, 92, 66, 0.35);
+  outline: 3px solid rgba(23, 59, 94, 0.35);
   outline-offset: 2px;
 }
 
@@ -358,7 +375,7 @@ body::before {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4a9d57;
+  background: var(--leaf);
 }
 
 .legend {
@@ -374,7 +391,7 @@ body::before {
   height: 9px;
   overflow: hidden;
   border-radius: 99px;
-  background: linear-gradient(90deg, #f1f7f0, #c8e7c9, #74bd7b, #378348);
+  background: linear-gradient(90deg, #dff4fa, #a9e0ee, #5ca9cb, #173b5e);
 }
 
 .table-wrap {
@@ -390,14 +407,6 @@ body::before {
   min-width: 480px;
 }
 
-.table-background {
-  position: absolute;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  inset: 0;
-}
-
 .table-background-image {
   position: absolute;
   width: 100%;
@@ -409,7 +418,7 @@ body::before {
 }
 
 .table-background-image.is-active {
-  opacity: 0.42;
+  opacity: 0.32;
 }
 
 table {
@@ -432,8 +441,8 @@ td {
 
 thead th {
   height: 38px;
-  background: rgba(248, 250, 247, 0.46);
-  color: #536057;
+  background: rgba(230, 245, 250, 0.62);
+  color: var(--ink);
   font-size: 11px;
   font-weight: 700;
 }
@@ -453,8 +462,8 @@ tbody tr:last-child td {
 }
 
 .time-label {
-  background: rgba(251, 252, 250, 0.46);
-  color: #69756c;
+  background: rgba(230, 245, 250, 0.58);
+  color: var(--muted);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -468,8 +477,8 @@ tbody tr:last-child td {
   justify-content: center;
   gap: 3px;
   border: 0;
-  background: rgba(245, 248, 243, 0.3);
-  color: #315d39;
+  background: rgba(223, 244, 250, 0.34);
+  color: var(--ink);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
@@ -486,24 +495,24 @@ tbody tr:last-child td {
 }
 
 .slot-button[data-level="1"] {
-  background: rgba(225, 240, 223, 0.42);
+  background: rgba(203, 237, 246, 0.5);
 }
 
 .slot-button[data-level="2"] {
-  background: rgba(196, 227, 194, 0.52);
+  background: rgba(151, 215, 232, 0.58);
 }
 
 .slot-button[data-level="3"] {
-  background: rgba(145, 202, 145, 0.62);
+  background: rgba(83, 163, 198, 0.7);
 }
 
 .slot-button[data-level="4"] {
-  background: rgba(76, 153, 88, 0.78);
+  background: rgba(23, 59, 94, 0.84);
   color: white;
 }
 
 .slot-button.is-mine {
-  box-shadow: inset 0 0 0 2px var(--forest);
+  box-shadow: inset 0 0 0 2px var(--leaf);
 }
 
 .calendar-note {
@@ -538,7 +547,7 @@ tbody tr:last-child td {
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(239, 248, 251, 0.82);
 }
 
 .participant-head {
@@ -630,10 +639,6 @@ tbody tr:last-child td {
     width: 100%;
     flex-basis: auto;
   }
-
-  .participant-card {
-    order: 1;
-  }
 }
 
 @media (max-width: 560px) {
@@ -647,8 +652,18 @@ tbody tr:last-child td {
   }
 
   .brand small {
-    max-width: 155px;
-    line-height: 1.3;
+    max-width: 220px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .brand-logo {
+    width: 70px;
+    height: 70px;
+  }
+
+  .brand strong {
+    font-size: 28px;
   }
 
   .intro {
